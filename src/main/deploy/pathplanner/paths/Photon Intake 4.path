@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.4127312870010371,
+        "y": 5.535354916863679
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.206281627947874,
+        "y": 4.751354408862663
+      },
+      "isLocked": false,
+      "linkedName": "P2 Start"
+    },
+    {
+      "anchor": {
+        "x": 2.695433852406168,
+        "y": 4.301987065512593
+      },
+      "prevControl": {
+        "x": 2.290889197163011,
+        "y": 4.657197006701707
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "RightRingFR"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 800.0,
+    "maxAngularAcceleration": 600.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -45.0
+  },
+  "reversed": false,
+  "folder": "More Test",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}
