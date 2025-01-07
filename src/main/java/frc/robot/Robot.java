@@ -127,8 +127,8 @@ public class Robot extends LoggedRobot {
   public void autonomousInit() {
     //getting the value we chose from the dashboard and putting it into motion in the auton
     m_autoSelected = m_chooser.getSelected();
-
-    drivebase.resetOdometry(PathPlannerAuto.getStaringPoseFromAutoFile(m_chooser.getSelected().getName()));
+    
+    drivebase.resetOdometry(PathPlannerAuto.getStartingPoseFromAutoFile(m_chooser.getSelected().getName()));
     
     
 //schedules the command so it actually begins moving

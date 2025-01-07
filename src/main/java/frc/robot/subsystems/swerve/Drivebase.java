@@ -9,7 +9,11 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.*;
+import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -59,7 +63,9 @@ public class Drivebase extends SubsystemBase {
 
 
   //Use for the follower config
-  private HolonomicPathFollowerConfig config;
+  private PPHolonomicDriveController config; 
+  private RobotConfig Rconfig; 
+
 
 
   //GYRO
@@ -110,16 +116,14 @@ public class Drivebase extends SubsystemBase {
 
     
     //PID constants for both translation and rotation, along with a path-following configuration (Edit for path following autos)
-    config = new HolonomicPathFollowerConfig(new PIDConstants(1.4, 0, 0),
-        new PIDConstants(1.1, 0.0000, 0.0),
-        // 0.12, 0.00001, 0.0
-        5, Math.sqrt(Math.pow(DriveConstants.kTrackWidth / 2, 2) +
-            Math.pow(DriveConstants.kWheelBase / 2, 2)),
-        new ReplanningConfig());
+    config = new PPHolonomicDriveController(new PIDConstants(1.4, 0, 0),
+        new PIDConstants(1.1, 0.0000, 0.0),.2);
 
+    Rconfig = new RobotConfig(0.0, 0.0, null, null);
+    
     
     //Auto builder basically sets up the Autonomous file and in the resets
-    AutoBuilder.configureHolonomic(this::getPose, this::resetOdometry, this::getSpeeds, this::setAutoSpeeds, config,
+    AutoBuilder.configure(this::getPose, this::resetOdometry, this::getSpeeds, this::setAutoSpeeds, config,Rconfig,
         shouldFlipPath(), this);
   }
 

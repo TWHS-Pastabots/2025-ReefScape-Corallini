@@ -1,22 +1,23 @@
 package frc.robot.subsystems.elevator;
 
-import com.revrobotics.CANSparkMax;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import frc.robot.Ports;
 import frc.robot.Constants.ElevatorConstants;
 
 public class Elevator {
     public static Elevator instance;
-    private CANSparkMax elevatorMotorL;
-    private CANSparkMax elevatorMotorR;
+    private SparkMax elevatorMotorL;
+    private SparkMax elevatorMotorR;
     private static RelativeEncoder encoderL;
     private static RelativeEncoder encoderR;
-    private SparkMaxPIDController elevatorControllerL;
-    private SparkMaxPIDController elevatorControllerR;
+    private SparkClosedLoopController elevatorControllerL;
+    private SparkClosedLoopController elevatorControllerR;
     private static ElevatorFeedforward feedForward;
     public static ElevatorState elevatorState = ElevatorState.BOT;
     private boolean[] connections = new boolean[2];
