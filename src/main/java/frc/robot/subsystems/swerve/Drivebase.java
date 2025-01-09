@@ -1,5 +1,8 @@
 package frc.robot.subsystems.swerve;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
@@ -9,6 +12,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -19,13 +23,16 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -39,7 +46,7 @@ import frc.robot.Constants.DriveConstants;
 public class Drivebase extends SubsystemBase {
   private static Drivebase instance;
 
-  //Enums for the two speed settings
+  // Enums for the two speed settings
 
   public enum DriveState {
     NORMAL(1),
@@ -52,23 +59,19 @@ public class Drivebase extends SubsystemBase {
     }
   }
 
-  //Sets the Driving original state to NORMAL
+  // Sets the Driving original state to NORMAL
   private DriveState driveState = DriveState.NORMAL;
-
 
   public SwerveModule frontLeft;
   public SwerveModule backLeft;
   public SwerveModule frontRight;
   public SwerveModule backRight;
 
+  // Use for the follower config
+  private PPHolonomicDriveController config;
+  private RobotConfig Rconfig;
 
-  //Use for the follower config
-  private PPHolonomicDriveController config; 
-  private RobotConfig Rconfig; 
-
-
-
-  //GYRO
+  // GYRO
   private static AHRS gyro;
 
   SwerveDriveOdometry odometry;
@@ -94,41 +97,39 @@ public class Drivebase extends SubsystemBase {
     backRight = new SwerveModule(Ports.backRightDrive, Ports.backRightSteer,
         DriveConstants.kBackRightChassisAngularOffset, true);
 
-    
-      
-    //GYRO SET TO 90 DEGREE ADJUSTMENT
+    // GYRO SET TO 90 DEGREE ADJUSTMENT
 
     gyro = new AHRS(SPI.Port.kMXP);
 
     gyro.setAngleAdjustment(90);
     gyro.zeroYaw();
 
-    
-    //THIS FACTOR IN GYRO ANGLE AND RETURNS ESTIMATION
+    // THIS FACTOR IN GYRO ANGLE AND RETURNS ESTIMATION
     poseEstimator = new SwerveDrivePoseEstimator(DriveConstants.kDriveKinematics,
         Rotation2d.fromDegrees(-gyro.getAngle()),
         getPositions(), new Pose2d());
 
-    
-    //TRAPAZOID MOTION PROFILE define the maximum velocity and acceleration (MAKE SURE TO TWEAK BEFORE EVERY SWERVE) 
+    // TRAPAZOID MOTION PROFILE define the maximum velocity and acceleration (MAKE
+    // SURE TO TWEAK BEFORE EVERY SWERVE)
     headingController = new ProfiledPIDController(4.5, 0, 0, new TrapezoidProfile.Constraints(0, 0), .02);
     headingController.enableContinuousInput(-Math.PI, Math.PI);
 
-    
-    //PID constants for both translation and rotation, along with a path-following configuration (Edit for path following autos)
+    // PID constants for both translation and rotation, along with a path-following
+    // configuration (Edit for path following autos)
     config = new PPHolonomicDriveController(new PIDConstants(1.4, 0, 0),
-        new PIDConstants(1.1, 0.0000, 0.0),.2);
+        new PIDConstants(1.1, 0.0000, 0.0));
 
     Rconfig = new RobotConfig(0.0, 0.0, null, null);
+        
     
     
-    //Auto builder basically sets up the Autonomous file and in the resets
-    AutoBuilder.configure(this::getPose, this::resetOdometry, this::getSpeeds, this::setAutoSpeeds, config,Rconfig,
+    
+    // Auto builder basically sets up the Autonomous file and in the resets
+    AutoBuilder.configure(this::getPose, this::resetOdometry, this::getSpeeds, this::setAutoSpeeds, config, Rconfig,
         shouldFlipPath(), this);
   }
-
-
   
+
   public void setFieldPose(final Pose2d pose) {
     this.resetOdometry(pose);
   }
@@ -155,31 +156,37 @@ public class Drivebase extends SubsystemBase {
     poseEstimator.resetPosition(Rotation2d.fromDegrees(-gyro.getAngle()), getPositions(), getPose());
   }
 
-  public Pose2d updateOdometry(Pose2d pose){
-      Pose2d position = poseEstimator.update(gyro.getRotation2d(), getPositions());
-      CameraSystem system = CameraSystem.getInstance();
-      Pose2d defaultPose = new Pose2d(0, 0, new Rotation2d(0));
-      if(pose != null && pose != defaultPose && system.hasTargets() && system.getTimeStamp() != -1)
-      {
+  public Pose2d updateOdometry(Pose2d pose) {
+    Pose2d position = poseEstimator.update(gyro.getRotation2d(), getPositions());
+    CameraSystem system = CameraSystem.getInstance();
+    Pose2d defaultPose = new Pose2d(0, 0, new Rotation2d(0));
+    if (pose != null && pose != defaultPose && system.hasTargets() && system.getTimeStamp() != -1) {
       poseEstimator.addVisionMeasurement(pose, system.getTimeStamp());
-      }
-      return position;
+    }
+    return position;
   }
   // Pose2d position = poseEstimator.update(gyro.getRotation2d(), getPositions());
-  //     Camera dualCamera = DualCamera.getInstance();
-  //     Optional<EstimatedRobotPose> photonPoseEstimator = dualCamera.getEstimatedPose(pose);
-  //     Pose2d defaultPose = new Pose2d(0, 0, new Rotation2d(0));
-  //     double timestamp;
-  //     if(pose != null && pose != defaultPose && (DualCamera.hasTargets(dualCamera.getBack())) && !photonPoseEstimator.isEmpty())
-  //     {
-  //     timestamp = result.getTimestampSeconds();
-  //     poseEstimator.addVisionMeasurement(photonPoseEstimator.get().estimatedPose.toPose2d(), photonPoseEstimator.get().timestampSeconds);
-  //     }
-  //     else if(pose != null && pose != defaultPose && DualCamera.hasTargets(dualCamera.getFront()) && !photonPoseEstimator.isEmpty()){
-  //     timestamp = result.getTimestampSeconds();
-  //      poseEstimator.addVisionMeasurement(photonPoseEstimator.get().estimatedPose.toPose2d(), timestamp);
-  //     }
-  //     return new Pose2d();
+  // Camera dualCamera = DualCamera.getInstance();
+  // Optional<EstimatedRobotPose> photonPoseEstimator =
+  // dualCamera.getEstimatedPose(pose);
+  // Pose2d defaultPose = new Pose2d(0, 0, new Rotation2d(0));
+  // double timestamp;
+  // if(pose != null && pose != defaultPose &&
+  // (DualCamera.hasTargets(dualCamera.getBack())) &&
+  // !photonPoseEstimator.isEmpty())
+  // {
+  // timestamp = result.getTimestampSeconds();
+  // poseEstimator.addVisionMeasurement(photonPoseEstimator.get().estimatedPose.toPose2d(),
+  // photonPoseEstimator.get().timestampSeconds);
+  // }
+  // else if(pose != null && pose != defaultPose &&
+  // DualCamera.hasTargets(dualCamera.getFront()) &&
+  // !photonPoseEstimator.isEmpty()){
+  // timestamp = result.getTimestampSeconds();
+  // poseEstimator.addVisionMeasurement(photonPoseEstimator.get().estimatedPose.toPose2d(),
+  // timestamp);
+  // }
+  // return new Pose2d();
 
   public void drive(double forward, double side, double rot) {
 
@@ -397,8 +404,7 @@ public class Drivebase extends SubsystemBase {
     return instance;
   }
 
-  public void tagAlign(Pose2d pose2d)
-  {
+  public void tagAlign(Pose2d pose2d) {
 
   }
 }

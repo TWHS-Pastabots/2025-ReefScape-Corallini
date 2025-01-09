@@ -179,8 +179,8 @@ public class SwerveModule {
 
                 correctedDesiredState.optimize(new Rotation2d(steerSparkMax.getAbsoluteEncoder().getPosition()));
                 // Command driving and turning SPARKS MAX towards their respective setpoints.
-                veloPIDController.setReference(correctedDesiredState.speedMetersPerSecond,
-                                SparkMax.ControlType.kVelocity);
+                // veloPIDController.setReference(correctedDesiredState.speedMetersPerSecond,
+                //                 SparkMax.ControlType.kVelocity);
                 
                 anglePIDController.setReference(correctedDesiredState.angle.getRadians(),
                                 SparkMax.ControlType.kPosition);
@@ -188,11 +188,11 @@ public class SwerveModule {
                 // SwerveModuleState optimizedDesiredState = SwerveModuleState.optimize(correctedDesiredState,
                 //                 new Rotation2d(steerSparkMax.getAbsoluteEncoder().getPosition()));
 
-                // double desiredSpeed = optimizedDesiredState.speedMetersPerSecond/DriveConstants.kMaxSpeedMetersPerSecond;
+                double desiredSpeed = correctedDesiredState.speedMetersPerSecond/DriveConstants.kMaxSpeedMetersPerSecond;
 
                 // // Command driving and turning SPARKS MAX towards their respective setpoints.
-                // drivingSparkMax.set(desiredSpeed);
-                
+                drivingSparkMax.set(desiredSpeed);
+
                 // anglePIDController.setReference(optimizedDesiredState.angle.getRadians(),
                 //                 SparkMax.ControlType.kPosition);
 
@@ -208,7 +208,7 @@ public class SwerveModule {
                 // Optimize the reference state to avoid spinning further than 90 degrees.
                 // SwerveModuleState optimizedDesiredState = SwerveModuleState.optimize(correctedDesiredState,
                 //                 new Rotation2d(steerSparkMax.getAbsoluteEncoder().getPosition()));
-
+                
                 correctedDesiredState.optimize(new Rotation2d(steerSparkMax.getAbsoluteEncoder().getPosition()));
                 // Command driving and turning SPARKS MAX towards their respective setpoints.
                 veloPIDController.setReference(correctedDesiredState.speedMetersPerSecond,
