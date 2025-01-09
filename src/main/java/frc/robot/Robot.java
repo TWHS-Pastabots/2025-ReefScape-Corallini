@@ -6,6 +6,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,6 +35,7 @@ public class Robot extends LoggedRobot {
   private LED litty;
   private CameraSystem camSystem;
   
+  public RobotConfig Rconfig;
   private static XboxController driver;
   private static XboxController operator;
   //initialization of the auton chooser in the dashboard
@@ -73,6 +75,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
+    
       Pose2d cameraPositionTele = camSystem.calculateRobotPosition();
 
        Pose2d posTele = drivebase.updateOdometry(cameraPositionTele);

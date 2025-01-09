@@ -182,8 +182,7 @@ public class SwerveModule {
                 // veloPIDController.setReference(correctedDesiredState.speedMetersPerSecond,
                 //                 SparkMax.ControlType.kVelocity);
                 
-                anglePIDController.setReference(correctedDesiredState.angle.getRadians(),
-                                SparkMax.ControlType.kPosition);
+                
                 // Optimize the reference state to avoid spinning further than 90 degrees.
                 // SwerveModuleState optimizedDesiredState = SwerveModuleState.optimize(correctedDesiredState,
                 //                 new Rotation2d(steerSparkMax.getAbsoluteEncoder().getPosition()));
@@ -192,6 +191,8 @@ public class SwerveModule {
 
                 // // Command driving and turning SPARKS MAX towards their respective setpoints.
                 drivingSparkMax.set(desiredSpeed);
+                anglePIDController.setReference(correctedDesiredState.angle.getRadians(),
+                                SparkMax.ControlType.kPosition);
 
                 // anglePIDController.setReference(optimizedDesiredState.angle.getRadians(),
                 //                 SparkMax.ControlType.kPosition);

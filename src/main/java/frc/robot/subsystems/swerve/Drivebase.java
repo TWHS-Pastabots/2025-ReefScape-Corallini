@@ -119,8 +119,17 @@ public class Drivebase extends SubsystemBase {
     config = new PPHolonomicDriveController(new PIDConstants(1.4, 0, 0),
         new PIDConstants(1.1, 0.0000, 0.0));
 
-    Rconfig = new RobotConfig(0.0, 0.0, null, null);
-        
+   
+    //Rconfig = RobotConfig.fromGUISettings();
+    try{
+      Rconfig = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      // Handle exception as needed
+      e.printStackTrace();
+    }
+    // Rconfig = new RobotConfig(Rconfig.massKG, Rconfig.MOI, Rconfig.moduleConfig, Rconfig.moduleLocations);
+
+    
     
     
     
