@@ -9,7 +9,7 @@ import java.nio.file.ProviderMismatchException;
 import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 
 /**
  * Do NOT add any static variables to this class, or any initialization at all. Unless you know what
@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * call.
  */
 public final class Main {
-  public static RobotConfig Rconfig;
   private Main() {}
 
   /**
@@ -27,12 +26,7 @@ public final class Main {
    */
   public static void main(String... args) {
     RobotBase.startRobot(Robot::new);
-    try{
-      Rconfig = RobotConfig.fromGUISettings();
-    } catch (Exception e) {
-      // Handle exception as needed
-      System.out.print(e.getStackTrace().toString());
-    }
+    
     
   }
 }

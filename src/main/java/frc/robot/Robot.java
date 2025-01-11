@@ -18,11 +18,13 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.IO.LED;
+import frc.robot.subsystems.claw.Wrist;
 
 import frc.robot.subsystems.swerve.Drivebase;
 import frc.robot.subsystems.swerve.Drivebase.DriveState;
@@ -30,8 +32,9 @@ import frc.robot.subsystems.vision.CameraSystem;
 
 public class Robot extends LoggedRobot {
   //all the initialing for the systems
+  private static Field2d field = new Field2d();
   private Drivebase drivebase;
- 
+  private Wrist wrist;
   private LED litty;
   private CameraSystem camSystem;
   
@@ -55,6 +58,8 @@ public class Robot extends LoggedRobot {
   public void robotInit() {
     drivebase = Drivebase.getInstance();
     litty = LED.getInstance();
+    wrist = Wrist.getInstance();
+
     camSystem = CameraSystem.getInstance();
     camSystem.AddCamera(new PhotonCamera("Cam1"), new Transform3d(
         new Translation3d(0.0, 0.0, 0.0), new Rotation3d(0.0, 0.0, 0.0))
@@ -75,7 +80,8 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
-    
+      SmartDashboard.putData("Orig Field", field);
+      field.setRobotPose(new Pose2d(new Translation2d(10,5), new Rotation2d()));
       Pose2d cameraPositionTele = camSystem.calculateRobotPosition();
 
        Pose2d posTele = drivebase.updateOdometry(cameraPositionTele);
@@ -164,7 +170,12 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopPeriodic() {
     
+    wrist.moveWrist(operator.getLeftX() * 360, operator.getRightY() * 360);
     /* DRIVE CONTROLS */
+    if(operator.getAButton()){
+      wrist.moveWrist(15, 45);
+    }
+
 
     
     //setting inputs for driving through the driver controller

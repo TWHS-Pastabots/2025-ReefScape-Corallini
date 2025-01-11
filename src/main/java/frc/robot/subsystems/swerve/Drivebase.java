@@ -120,14 +120,12 @@ public class Drivebase extends SubsystemBase {
         new PIDConstants(1.1, 0.0000, 0.0));
 
    
-    //Rconfig = RobotConfig.fromGUISettings();
     try{
       Rconfig = RobotConfig.fromGUISettings();
     } catch (Exception e) {
       // Handle exception as needed
       e.printStackTrace();
     }
-    // Rconfig = new RobotConfig(Rconfig.massKG, Rconfig.MOI, Rconfig.moduleConfig, Rconfig.moduleLocations);
 
     
     

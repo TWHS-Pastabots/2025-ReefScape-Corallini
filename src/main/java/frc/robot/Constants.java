@@ -148,10 +148,10 @@ public final class Constants {
   }
 
 
-  public static final class IntakeConstants {
-    public static final double flipperPCoefficient = 0.06;
-    public static final double flipperICoefficient = 0.0;
-    public static final double flipperDCoefficient = 0.0;
+  public static final class PivotConstants {
+    public static final double pivotPCoefficient = 0.06;
+    public static final double pivotICoefficient = 0.0;
+    public static final double pivotDCoefficient = 0.0;
 
     // prototype numbers:
     // P: .1 I: 0 D: 0
