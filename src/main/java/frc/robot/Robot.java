@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.IO.LED;
 import frc.robot.subsystems.claw.Wrist;
-
+import frc.robot.subsystems.claw.Wrist.WristState;
 import frc.robot.subsystems.swerve.Drivebase;
 import frc.robot.subsystems.swerve.Drivebase.DriveState;
 import frc.robot.subsystems.vision.CameraSystem;
@@ -80,7 +80,10 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
-   
+      SmartDashboard.putNumber("Left abs encoder", wrist.MotorL.getAbsoluteEncoder().getPosition());
+      SmartDashboard.putNumber("Right abs encoder", wrist.MotorR.getAbsoluteEncoder().getPosition());
+
+      SmartDashboard.putString("Wrist State", wrist.wristState.toString());
 
       SmartDashboard.putData("Orig Field", field);
       field.setRobotPose(new Pose2d(new Translation2d(10,5), new Rotation2d()));
@@ -175,16 +178,20 @@ public class Robot extends LoggedRobot {
     // wrist.moveWrist(operator.getLeftX() * 360, operator.getRightY() * 360);
     /* DRIVE CONTROLS */
     if(operator.getXButton()){
-      wrist.rotateTheWrist();
+      wrist.setWriststate(WristState.TEST4);
     }else if(operator.getYButton()){
-      wrist.tiltTheWrist();
+      wrist.setWriststate(WristState.TEST3);
     }else if(operator.getAButton()){
-      wrist.oppositeThetiltTheWrist();
+      wrist.setWriststate(WristState.TEST2);
+      
     }else if(operator.getBButton()){
-      wrist.oppositeTherotateTheWrist();
+      wrist.setWriststate(WristState.TEST);
     }else{
       wrist.ZeroTheWrist();
     }
+
+    wrist.UpdatePose();
+
 
    
 
