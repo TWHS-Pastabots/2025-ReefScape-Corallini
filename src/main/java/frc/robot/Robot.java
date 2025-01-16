@@ -179,18 +179,30 @@ public class Robot extends LoggedRobot {
     /* DRIVE CONTROLS */
     if(operator.getXButton()){
       wrist.setWriststate(WristState.TEST4);
+      wrist.UpdatePose();
     }else if(operator.getYButton()){
       wrist.setWriststate(WristState.TEST3);
+      wrist.UpdatePose();
     }else if(operator.getAButton()){
       wrist.setWriststate(WristState.TEST2);
-      
+      wrist.UpdatePose();
     }else if(operator.getBButton()){
       wrist.setWriststate(WristState.TEST);
-    }else{
-      wrist.ZeroTheWrist();
+      wrist.UpdatePose();
     }
 
-    wrist.UpdatePose();
+    // if(driver.getXButton()){
+    //   wrist.oppositeTherotateTheWrist();
+    // }else if(driver.getYButton()){
+    //   wrist.oppositeThetiltTheWrist();
+    // }else if(driver.getAButton()){
+    //   wrist.tiltTheWrist();
+    // }else if(driver.getBButton()){
+    //   wrist.rotateTheWrist();
+    // }else{
+    //   wrist.ZeroTheWrist();
+    // }
+
 
 
    

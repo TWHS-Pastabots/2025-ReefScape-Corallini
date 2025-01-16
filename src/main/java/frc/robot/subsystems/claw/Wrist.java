@@ -22,10 +22,10 @@ public class Wrist {
 
     public enum WristState
     {
-        TEST(0,0),
-        TEST2(90,0),
-        TEST3(30,0),
-        TEST4(50,160);
+        TEST(5,0),
+        TEST2(30,0),
+        TEST3(120,0),
+        TEST4(270,0);
 
         public double tiltPosition;
         public double rotPosition;
@@ -43,7 +43,7 @@ public class Wrist {
     public ArmFeedforward feedforward;
     public SparkMaxConfig MotorConfigR;
     public SparkMaxConfig MotorConfigL;
-    public WristState wristState = WristState.TEST;
+    public WristState wristState = WristState.TEST2;
     // public SparkMaxPIDController RPID;
     // public SparkMaxPIDController LPID;
     public static Wrist instance;
@@ -73,10 +73,10 @@ public class Wrist {
             .smartCurrentLimit(60);
         MotorConfigL.absoluteEncoder
             .positionConversionFactor(360)
-            .inverted(true);
+            .inverted(false);
         MotorConfigL.closedLoop
             .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-            .pid(0.001, 0, 0)
+            .pid(0.005, 0, 0)
             .outputRange(-1, 1);
         MotorL.configure(MotorConfigL, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -85,59 +85,62 @@ public class Wrist {
             .inverted(false)
             .idleMode(IdleMode.kBrake)
             .smartCurrentLimit(60);
-        MotorConfigL.absoluteEncoder
+        MotorConfigR.absoluteEncoder
             .positionConversionFactor(360)
             .inverted(true);
-        MotorConfigL.closedLoop
+        MotorConfigR.closedLoop
             .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-            .pid(0.001, 0, 0)
+            .pid(0.005, 0, 0)
             .outputRange(-1, 1);
         MotorR.configure(MotorConfigR, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         ControllerL = MotorL.getClosedLoopController();
         ControllerR = MotorR.getClosedLoopController();
     }
-    public void UpdatePose(){
-        if(hasRotated)
-        {
-            rotateWrist(wristState.rotPosition);
-        }
-        else{
-            if(hasZerod)
-        {   
-            if(hasTilted)
-            {
-                if(rotateWrist(wristState.rotPosition)){
-                    hasZerod = false;
-                    hasTilted = false;
-                    hasRotated = true;
-                }
-            }
-            else if(tiltWrist(wristState.tiltPosition))
-            {
-                hasTilted = true;
-                if(rotateWrist(wristState.rotPosition)){
-                    hasZerod = false;
-                    hasTilted = false;
-                    hasRotated = true;
-                }
-            }
-        }
-        else if(rezeroRotation())
-        {
-            hasZerod = true;
-            if(tiltWrist(wristState.tiltPosition))
-            {
-                hasTilted = true;
-                if(rotateWrist(wristState.rotPosition))
-                {
-                    hasZerod = false;
-                    hasTilted = false;
-                    hasRotated = true;
-                }
-            }
-        }
-        }
+    public void UpdatePose()
+    {
+        tiltWrist(wristState.tiltPosition);
+        // if(hasRotated)
+        // {
+        //     rotateWrist(wristState.rotPosition);
+        // }
+        // else
+        // {
+        //     if(hasZerod)
+        // {   
+        //     if(hasTilted)
+        //     {
+        //         if(rotateWrist(wristState.rotPosition)){
+        //             hasZerod = false;
+        //             hasTilted = false;
+        //             hasRotated = true;
+        //         }
+        //     }
+        //     else if(tiltWrist(wristState.tiltPosition))
+        //     {
+        //         hasTilted = true;
+        //         if(rotateWrist(wristState.rotPosition)){
+        //             hasZerod = false;
+        //             hasTilted = false;
+        //             hasRotated = true;
+        //         }
+        //     }
+        // }
+        // else if(rezeroRotation())
+        // {
+        //     hasZerod = true;
+        //     if(tiltWrist(wristState.tiltPosition))
+        //     {
+        //         hasTilted = true;
+        //         if(rotateWrist(wristState.rotPosition))
+        //         {
+        //             hasZerod = false;
+        //             hasTilted = false;
+        //             hasRotated = true;
+        //         }
+        //     }
+        // }
+        // }
         
 
         SmartDashboard.putBoolean("hasZerod", hasZerod);
@@ -153,6 +156,7 @@ public class Wrist {
 
         double currentTilt = (motorLCurrent + motorRCurrent) /2;
         double currentRotation = (motorRCurrent - motorLCurrent)/2;
+        
 
         double motorLTarget = motorLCurrent + (targetTilt - currentRotation) - (targetRotation - currentRotation);
         double motorRTarget = motorRCurrent + (targetTilt - currentRotation) + (targetRotation - currentRotation);
@@ -173,23 +177,23 @@ public class Wrist {
    
 
     public void rotateTheWrist(){
-        MotorL.set(0.2);
-       MotorR.set(0.2);
+        MotorL.set(0.1);
+       MotorR.set(0.1);
     }
 
     public void oppositeTherotateTheWrist(){
-        MotorL.set(-0.2);
-        MotorR.set(-0.2);
+        MotorL.set(-0.1);
+        MotorR.set(-0.1);
     }
 
     public void tiltTheWrist(){
-        MotorL.set(-0.2);
-        MotorR.set(0.2);
+        MotorL.set(-0.1);
+        MotorR.set(0.1);
     }
 
     public void oppositeThetiltTheWrist(){
-        MotorL.set(0.2);
-       MotorR.set(-0.2);
+        MotorL.set(0.1);
+       MotorR.set(-0.1);
     }
 
     public void ZeroTheWrist(){
@@ -199,10 +203,34 @@ public class Wrist {
 
     public boolean tiltWrist(double targetTilt){
         tiltPosition = targetTilt;
+        double[] anglesL = WrapAngle(getPosition(MotorL), targetTilt);
+        double[] anglesR = WrapAngle(getPosition(MotorR), targetTilt);
+        if(!hasReachedPose(MotorL, anglesL[0], 0.5)){
+            ControllerL.setReference(anglesL[0], ControlType.kPosition, ClosedLoopSlot.kSlot0, 
+            feedforward.calculate(MotorL.getAbsoluteEncoder().getPosition(), 0));
+        }
+        else if(hasReachedPose(MotorL, anglesL[0], 0.5) && anglesL[1] != -1){
+            ControllerL.setReference(anglesL[1], ControlType.kPosition, ClosedLoopSlot.kSlot0, 
+            feedforward.calculate(MotorL.getAbsoluteEncoder().getPosition(), 0));
+        }
 
-        ControllerL.setReference(targetTilt, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward.calculate(MotorL.getAbsoluteEncoder().getPosition(), 0));
-        ControllerR.setReference(targetTilt, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward.calculate(MotorR.getAbsoluteEncoder().getPosition(), 0));
-        if(hasReachedPose(targetTilt, 2)){
+        if(!hasReachedPose(MotorR, anglesL[0], 0.5)){
+            ControllerR.setReference(anglesR[0], ControlType.kPosition, ClosedLoopSlot.kSlot0, 
+            feedforward.calculate(MotorL.getAbsoluteEncoder().getPosition(), 0));
+        }
+        else if(hasReachedPose(MotorL, anglesL[0], 0.5) && anglesR[1] != -1){
+            ControllerR.setReference(anglesR[1], ControlType.kPosition, ClosedLoopSlot.kSlot0, 
+            feedforward.calculate(MotorL.getAbsoluteEncoder().getPosition(), 0));
+        }
+
+       
+        
+        // ControllerR.setReference(targetTilt, ControlType.kPosition, ClosedLoopSlot.kSlot0, 
+        // feedforward.calculate(MotorR.getAbsoluteEncoder().getPosition(), 0));
+        if(anglesL[1] != -1 && hasReachedPose(MotorL, anglesL[1], .5)){
+            return true;
+        }
+        else if(hasReachedPose(MotorL, anglesL[0], .5) && anglesL[1] == -1){
             return true;
         }
         return false;
@@ -210,35 +238,72 @@ public class Wrist {
     public boolean rotateWrist(double targetRot){
         rotatePosition = targetRot;
 
-        ControllerL.setReference(tiltPosition + targetRot, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward.calculate(MotorL.getAbsoluteEncoder().getPosition(), 0));
-        ControllerR.setReference(tiltPosition - targetRot, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward.calculate(MotorR.getAbsoluteEncoder().getPosition(), 0));
-        if(hasReachedPose(tiltPosition + targetRot, 2)){
+        ControllerL.setReference(tiltPosition + targetRot, ControlType.kPosition, ClosedLoopSlot.kSlot0, 
+        feedforward.calculate(MotorL.getAbsoluteEncoder().getPosition(), 0));
+        
+        ControllerR.setReference(tiltPosition - targetRot, ControlType.kPosition, ClosedLoopSlot.kSlot0, 
+        feedforward.calculate(MotorR.getAbsoluteEncoder().getPosition(), 0));
+        if(hasReachedPose(MotorL, tiltPosition + targetRot, 2)){
             return true;
         }
         return false;
     }
+
     public boolean rezeroRotation(){
         rotatePosition = 0;
 
-        ControllerL.setReference(tiltPosition, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward.calculate(MotorL.getAbsoluteEncoder().getPosition(), 0));
-        ControllerR.setReference(tiltPosition, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward.calculate(MotorR.getAbsoluteEncoder().getPosition(), 0));
-        if(hasReachedPose(tiltPosition, 2)){
+        ControllerL.setReference(tiltPosition, ControlType.kPosition, ClosedLoopSlot.kSlot0, 
+        feedforward.calculate(MotorL.getAbsoluteEncoder().getPosition(), 0));
+        
+        ControllerR.setReference(tiltPosition, ControlType.kPosition, ClosedLoopSlot.kSlot0, 
+        feedforward.calculate(MotorR.getAbsoluteEncoder().getPosition(), 0));
+        if(hasReachedPose(MotorL, tiltPosition, 2)){
             return true;
         }
         return false;
     }
-    public boolean hasReachedPose(double position, double tolerance) {
-        return Math.abs(getPosition() - position) < tolerance;
+    public boolean hasReachedPose(SparkMax motor, double position, double tolerance) {
+        return Math.abs(getPosition(motor) - position) < tolerance;
     }
-    public double getPosition()
+    public double getPosition(SparkMax motor)
     {
-        return MotorL.getAbsoluteEncoder().getPosition();
+        return motor.getAbsoluteEncoder().getPosition();
     }
     public WristState getWristState(){
         return wristState;
     }
     public void setWriststate(WristState state){
         wristState = state;
+        hasRotated = false;
+    }
+    public double[] WrapAngle(double currentAngle, double targetAngle)
+    {
+        double[] angles = new double[2];
+        angles[0] = -1; 
+        angles[1] = -1;
+        if(currentAngle < 0){
+            currentAngle = currentAngle + 360;
+        }
+        if(targetAngle < 0){
+            targetAngle = targetAngle + 360;
+        }
+        if(Math.abs(targetAngle - currentAngle) > 180)
+        {
+            
+            if(targetAngle < currentAngle)
+            {
+                angles[0] = 360;
+                angles[1] = targetAngle;
+            }
+            else if(targetAngle > currentAngle){
+                angles[0] = 0;
+                angles[1] = targetAngle;
+            }
+        }
+        else{
+            angles[0] = targetAngle;
+        }
+        return angles;
     }
     public static Wrist getInstance() {
         if (instance == null)
